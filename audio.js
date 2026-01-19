@@ -13,7 +13,6 @@ class AudioManager {
         // Lofi music state
         this.musicPlaying = false;
         this.musicNodes = {};
-        this.bpm = 75; // Slow, chill tempo
         this.currentBeat = 0;
         this.nextNoteTime = 0;
         this.scheduleAheadTime = 0.1;

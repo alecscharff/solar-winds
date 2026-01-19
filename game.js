@@ -14,6 +14,7 @@ class Game {
         this.isRunning = false;
         this.isPaused = false;
         this.isGameOver = false;
+        this.gameStarted = false;
 
         // Time tracking
         this.lastTime = 0;
@@ -89,13 +90,71 @@ class Game {
         // Setup event listeners
         this.setupEventListeners();
 
-        // Start game loop
+        // Setup start menu
+        this.setupStartMenu();
+    }
+
+    setupStartMenu() {
+        const startMenu = document.getElementById('start-menu');
+        const startBtn = document.getElementById('start-btn');
+
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                this.startGame();
+            });
+        }
+
+        // Also allow pressing Enter or Space to start
+        const startHandler = (e) => {
+            if (e.code === 'Enter' || e.code === 'Space') {
+                if (startMenu && !startMenu.classList.contains('hidden')) {
+                    e.preventDefault();
+                    this.startGame();
+                }
+            }
+        };
+        window.addEventListener('keydown', startHandler);
+
+        // Start the animation loop for menu background
         this.isRunning = true;
         this.lastTime = performance.now();
         requestAnimationFrame(this.gameLoop);
+    }
+
+    startGame() {
+        const startMenu = document.getElementById('start-menu');
+        if (startMenu) {
+            startMenu.classList.add('hidden');
+        }
+
+        // Resume audio context and start music
+        window.audioManager.resume();
+
+        // Mark game as fully started (not just background animation)
+        this.gameStarted = true;
 
         // Show welcome message
         this.showMessage('Welcome to Solar Winds. Press E to dock at stations.');
+    }
+
+    // Render just the starfield for the menu background
+    renderMenuBackground() {
+        const ctx = this.ctx;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+
+        // Clear with deep space color
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, w, h);
+
+        // Render starfield with a slow drifting camera
+        if (this.world && this.world.starfield) {
+            const menuCamera = {
+                x: Math.sin(this.gameTime * 0.1) * 100,
+                y: Math.cos(this.gameTime * 0.15) * 100
+            };
+            this.world.starfield.render(ctx, menuCamera, this.deltaTime);
+        }
     }
 
     setupEventListeners() {
@@ -200,12 +259,19 @@ class Game {
             this.deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.1) * this.timeScale;
             this.lastTime = currentTime;
 
-            if (!this.isPaused && !this.isGameOver) {
-                this.gameTime += this.deltaTime;
+            // Always update game time for menu animations
+            this.gameTime += this.deltaTime;
+
+            if (this.gameStarted && !this.isPaused && !this.isGameOver) {
                 this.update(this.deltaTime);
             }
 
-            this.render();
+            // Render either menu background or full game
+            if (this.gameStarted) {
+                this.render();
+            } else {
+                this.renderMenuBackground();
+            }
         } catch (e) {
             console.error('Game Loop Crash:', e);
             this.isRunning = false;

@@ -358,14 +358,13 @@ class UI {
                 ctx.fillStyle = '#ffaa00';
                 ctx.fill();
             } else {
-                // Out of range indicator
+                // Out of range indicator - show direction to waypoint at edge of minimap
                 const indicatorDist = Math.min(w, h) / 2 - 10;
-                const ix = w / 2 + Math.cos(angle - Math.PI / 2) * indicatorDist; // - PI/2 because canvas rotation... wait standard math
-                const ix2 = w / 2 + Math.cos(angle) * indicatorDist;
-                const iy2 = h / 2 + Math.sin(angle) * indicatorDist;
+                const ix = w / 2 + Math.cos(angle) * indicatorDist;
+                const iy = h / 2 + Math.sin(angle) * indicatorDist;
 
                 ctx.beginPath();
-                ctx.arc(ix2, iy2, 4, 0, Math.PI * 2);
+                ctx.arc(ix, iy, 4, 0, Math.PI * 2);
                 ctx.fillStyle = '#ffaa00';
                 ctx.fill();
             }

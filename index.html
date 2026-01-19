@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Winds - Space Combat</title>
+    <meta name="description" content="A web-based remake of the classic Solar Winds space combat and exploration game">
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Main Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- HUD Overlay -->
+        <div id="hud">
+            <div id="hud-left">
+                <div class="hud-panel" id="ship-status">
+                    <h3>SHIP STATUS</h3>
+                    <div class="status-bar">
+                        <span class="label">HULL</span>
+                        <div class="bar-container">
+                            <div class="bar hull-bar" id="hull-bar"></div>
+                        </div>
+                        <span class="value" id="hull-value">100%</span>
+                    </div>
+                    <div class="status-bar">
+                        <span class="label">SHIELDS</span>
+                        <div class="bar-container">
+                            <div class="bar shield-bar" id="shield-bar"></div>
+                        </div>
+                        <span class="value" id="shield-value">100%</span>
+                    </div>
+                    <div class="status-bar">
+                        <span class="label">ENERGY</span>
+                        <div class="bar-container">
+                            <div class="bar energy-bar" id="energy-bar"></div>
+                        </div>
+                        <span class="value" id="energy-value">100%</span>
+                    </div>
+                </div>
+
+                <div class="hud-panel" id="coordinates">
+                    <span class="coord-label">X:</span> <span id="coord-x">0</span>
+                    <span class="coord-label">Y:</span> <span id="coord-y">0</span>
+                </div>
+            </div>
+
+            <div id="hud-center">
+                <div id="message-display"></div>
+            </div>
+
+            <div id="hud-right">
+                <div class="hud-panel" id="minimap-container">
+                    <h3>SENSORS</h3>
+                    <canvas id="minimap"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div id="control-panel">
+            <div class="panel-section" id="power-controls">
+                <h3>POWER ALLOCATION</h3>
+                <div class="power-slider">
+                    <span class="power-label">ENG</span>
+                    <input type="range" id="power-engines" min="0" max="100" value="50">
+                    <span class="power-value" id="power-engines-value">50%</span>
+                </div>
+                <div class="power-slider">
+                    <span class="power-label">SHD</span>
+                    <input type="range" id="power-shields" min="0" max="100" value="50">
+                    <span class="power-value" id="power-shields-value">50%</span>
+                </div>
+                <div class="power-slider">
+                    <span class="power-label">WPN</span>
+                    <input type="range" id="power-weapons" min="0" max="100" value="50">
+                    <span class="power-value" id="power-weapons-value">50%</span>
+                </div>
+                <div class="power-slider">
+                    <span class="power-label">SNS</span>
+                    <input type="range" id="power-sensors" min="0" max="100" value="50">
+                    <span class="power-value" id="power-sensors-value">50%</span>
+                </div>
+                <div class="power-total">
+                    TOTAL: <span id="power-total">200</span>/200
+                </div>
+            </div>
+
+            <div class="panel-section" id="mission-panel">
+                <h3>MISSION</h3>
+                <div id="mission-text">No active mission</div>
+            </div>
+
+            <div class="panel-section" id="controls-help">
+                <h3>CONTROLS</h3>
+                <div class="control-hint"><kbd>W</kbd> Thrust</div>
+                <div class="control-hint"><kbd>A</kbd><kbd>D</kbd> Rotate</div>
+                <div class="control-hint"><kbd>S</kbd> Brake</div>
+                <div class="control-hint"><kbd>SPACE</kbd> Fire</div>
+                <div class="control-hint"><kbd>E</kbd> Dock</div>
+                <div class="control-hint"><kbd>TAB</kbd> Map</div>
+            </div>
+        </div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogue-box" class="hidden">
+            <div id="dialogue-header">
+                <span id="dialogue-title">INCOMING TRANSMISSION</span>
+                <button id="dialogue-close">×</button>
+            </div>
+            <div id="dialogue-content"></div>
+            <div id="dialogue-options"></div>
+        </div>
+
+        <!-- Star Map Overlay -->
+        <div id="star-map" class="hidden">
+            <canvas id="star-map-canvas"></canvas>
+            <div id="star-map-legend">
+                <span class="legend-item"><span class="dot player"></span> Your Ship</span>
+                <span class="legend-item"><span class="dot station"></span> Station</span>
+                <span class="legend-item"><span class="dot enemy"></span> Hostile</span>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="hidden">
+            <h1>SHIP DESTROYED</h1>
+            <p>Your vessel has been lost in the void of space.</p>
+            <button id="restart-btn">RESTART</button>
+        </div>
+
+        <div id="pause-screen" class="hidden">
+            <h1>PAUSED</h1>
+
+            <div class="settings-container">
+                <div class="setting-group">
+                    <h3>AUDIO</h3>
+                    <div class="slider-row">
+                        <label>Music Volume</label>
+                        <input type="range" id="setting-music-vol" min="0" max="100" value="25">
+                        <span id="val-music-vol">25%</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>SFX Volume</label>
+                        <input type="range" id="setting-sfx-vol" min="0" max="100" value="50">
+                        <span id="val-sfx-vol">50%</span>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h3>GAMEPLAY</h3>
+                    <div class="slider-row">
+                        <label>Game Speed</label>
+                        <input type="range" id="setting-game-speed" min="50" max="200" value="100">
+                        <span id="val-game-speed">1.0x</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Player Speed</label>
+                        <input type="range" id="setting-player-speed" min="50" max="200" value="100">
+                        <span id="val-player-speed">1.0x</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Enemy Speed</label>
+                        <input type="range" id="setting-enemy-speed" min="50" max="200" value="100">
+                        <span id="val-enemy-speed">1.0x</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Braking Power</label>
+                        <input type="range" id="setting-brake-power" min="50" max="100" value="92">
+                        <span id="val-brake-power">0.92</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Weapon Seeking</label>
+                        <input type="range" id="setting-weapon-seeking" min="0" max="50" value="0">
+                        <span id="val-weapon-seeking">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="resume-btn" class="menu-btn">RESUME GAME</button>
+        </div>
+    </div>
+
+    <script src="audio.js"></script>
+    <script src="ship.js"></script>
+    <script src="enemy.js"></script>
+    <script src="world.js"></script>
+    <script src="missions.js"></script>
+    <script src="ui.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
